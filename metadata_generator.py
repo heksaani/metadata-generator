@@ -6,21 +6,26 @@ import csv, os
 
 class Metadata:
     def __init__(self, species:str, identifier:str, rymy_id:str, food_bug:str, source:str,
-                 sampling_reason:str, sampling_date:str, sample_received_date:str, 
+                 sampling_reason:str, sampling_date:str, sample_received_date:str,
                  owner:str, location:str, amr_phenotype:str, info:str, file1:str, file2:str,
-                 instrument:str, library:str, lib_other:str, add_results:str):
+                 accession:str, instrument:str, library:str, lib_other:str, add_results:str):
         """Initialization of the metadata class which has the following information
-        species: 
+        species:
         identifier:
         rymy_id:
         food_bug
-        source: 
+        source:
         sampling_data:
         sample_received_date:
-        owner: 
+        owner:
         location:
         file1:
         file2:
+        accession:
+        instrument:
+        library:
+        library-other:
+        add_results:
         """
         self.species = species
         self.identifier = identifier
@@ -36,6 +41,7 @@ class Metadata:
         self.additional_information = info
         self.file1 = file1
         self.file2 = file2
+        self.accession = accession
         self.instrument = instrument
         self.library = library
         self.library_other = lib_other
@@ -46,7 +52,7 @@ class Metadata:
         return [self.species, self.identifier, self.rymy_id, self.food_bug, self.source,
                 self.sampling_reason, self.sampling_date, self.sample_received_date,
                 self.owner, self.location, self.amr_phenotype, self.additional_information,
-                self.file1, self.file2, self.instrument, self.library, self.library_other,
+                self.file1, self.file2, self.accession, self.instrument, self.library, self.library_other,
                 self.add_results]
     
     @staticmethod
@@ -65,7 +71,7 @@ class Metadata:
                 writer.writerow(["#Pipeline-Species", "Primary-Identifier", "RYMY-ID", "Food_bug", "Source",
                                 "Sampling-Reason", "Sampling-Date", "Sample-Received-Date",
                                 "Owner-Collection", "Location", "AMR-Phenotype", "Additional-Information",
-                                "File_1", "File_2", "Instrument", "Library", "Library-Other", "Add-Results"])
+                                "File_1", "File_2", "Accession", "Instrument", "Library", "Library-Other", "Add-Results"])
                 for meta in metadata_list:
                     writer.writerow(meta.to_list())
 
@@ -134,7 +140,6 @@ def main():
         #source, sampling_date, sample_received_date = ask_sample_metadata(sample_id)
         source = "Human"
         sampling_date ="2024-04-02"
-        sample_received_date = ""
         meta = Metadata(
             species=species,
             identifier=sample_id,
@@ -143,13 +148,14 @@ def main():
             source=source,
             sampling_reason="",
             sampling_date=sampling_date,
-            sample_received_date=sample_received_date,
+            sample_received_date="",
             owner=owner,
             location=location,
             amr_phenotype="",
             info="",
             file1=sample_list[0], # type: ignore
             file2=sample_list[1], # type: ignore
+            accession = "",
             instrument="",
             library="",
             lib_other="",
@@ -161,5 +167,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-## TODO add check that both R1 and R2 are infact in the csv 
