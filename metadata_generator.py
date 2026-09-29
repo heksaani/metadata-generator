@@ -346,7 +346,9 @@ def main():
     "2. You can set some of the metadata to be same for all samples\n" \
     "3. Then user is asked to give metadata information for each sample.\n" \
     "4. Finally, the script will write the metadata information to a csv file called metadata.csv\n" \
-    "Compulsory fields are : Pipeline-Species, Primary-Identifier, Source, Owner-Collection.\n" \
+    "\n"
+    "Compulsory fields are:\n" \
+    "Pipeline-Species\nPrimary-Identifier\nSource\nOwner-Collection.\n" \
     "Sampling-Date and Sample-Received-Date are conditionally optional meaning one of them must be given.\n" )
     print("")
     while True:
