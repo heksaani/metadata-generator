@@ -277,14 +277,18 @@ def create_sample_dictionary(sample_fastq_folder:str):
     sample_dict = defaultdict(lambda: [None, None])
     for file in fastq_files:
         filename = file.name
-        file_path = file
         if '_R1' in filename:
-            identifier = filename.split('_')[0]
-            sample_dict[identifier][0] = file_path # type: ignore
-
+            identifier = filename.split('_R1')[0]
+            if sample_dict[identifier][0] is not None:
+                print(f"WARNING: multiple R1 files matched identifier '{identifier}': "
+                      f"{sample_dict[identifier][0].name} and {filename}. Using the latter.")
+            sample_dict[identifier][0] = file
         elif '_R2' in filename:
-            identifier = filename.split('_')[0]
-            sample_dict[identifier][1] = file_path # type: ignore
+            identifier = filename.split('_R2')[0]
+            if sample_dict[identifier][1] is not None:
+                print(f"WARNING: multiple R2 files matched identifier '{identifier}': "
+                      f"{sample_dict[identifier][1].name} and {filename}. Using the latter.")
+            sample_dict[identifier][1] = file
         else:
             print(f"ERROR the file {file} name does not contain R1/R2")
     return sample_dict
