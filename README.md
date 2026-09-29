@@ -7,6 +7,10 @@ It scans a folder (and its subfolders) for paired-end `.fastq.gz` files, asks th
 user for the required metadata fields, and writes them out in the format expected
 by InnuendoCLI (`;`-delimited CSV with a `#Pipeline-Species;...` header).
 
+
+![alt text](image.png)
+
+
 ## Requirements
 
 - Python 3.9+
