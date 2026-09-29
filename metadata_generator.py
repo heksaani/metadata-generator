@@ -24,11 +24,11 @@ Finally, it will write the metadata information to a csv file called metadata.cs
 """
 from pathlib import Path
 from collections import defaultdict
+from typing import Optional, List, DefaultDict
 import csv, os
 from datetime import datetime
-from dataclasses import dataclass, field
-from typing import Optional, List
-
+from dataclasses import dataclass
+import re
 
 @dataclass
 class Field:
@@ -263,34 +263,49 @@ class Metadata:
                 for meta in metadata_list:
                     writer.writerow(meta.to_list())
 
-def create_sample_dictionary(sample_fastq_folder:str):
+# Illuminan bcl2fastq-oletusnimeäminen: <näyte>_S<numero>_L<lane>_R<1|2>_001.fastq.gz
+ILLUMINA_PATTERN = re.compile(
+    r'^(?P<sample>.+)_S\d+_L\d{3}_R(?P<read>[12])_\d+\.fastq\.gz$', re.IGNORECASE
+)
 
-    """Function that returns dictionary that contains 
-        sample_identifier: [fastq1,fastq2] from the given path and its subfolders """
-    
+# Yksinkertaisempi muoto: <näyte>_R<1|2>[valinnainen loppu].fastq.gz
+SIMPLE_PATTERN = re.compile(
+    r'^(?P<sample>.+?)_R(?P<read>[12])(?:_\d+)?\.fastq\.gz$', re.IGNORECASE
+)
+
+
+def parse_fastq_filename(filename: str):
+    """Palauttaa (sample_id, read_number) tai (None, None) jos ei täsmää."""
+    for pattern in (ILLUMINA_PATTERN, SIMPLE_PATTERN):
+        match = pattern.match(filename)
+        if match:
+            return match.group("sample"), match.group("read")
+    return None, None
+
+
+def create_sample_dictionary(sample_fastq_folder: str) -> DefaultDict[str, List[Optional[Path]]]:
+    """..."""
     base_dir = Path(sample_fastq_folder)
     fastq_files = list(base_dir.rglob('*.fastq.gz'))
     if not fastq_files:
         print(f"ERROR: No fastq.gz files found in the folder {sample_fastq_folder}")
-        return {}
+        return defaultdict(lambda: [None, None])
 
-    sample_dict = defaultdict(lambda: [None, None])
+    sample_dict: DefaultDict[str, List[Optional[Path]]] = defaultdict(lambda: [None, None])
+
     for file in fastq_files:
-        filename = file.name
-        if '_R1' in filename:
-            identifier = filename.split('_R1')[0]
-            if sample_dict[identifier][0] is not None:
-                print(f"WARNING: multiple R1 files matched identifier '{identifier}': "
-                      f"{sample_dict[identifier][0].name} and {filename}. Using the latter.")
-            sample_dict[identifier][0] = file
-        elif '_R2' in filename:
-            identifier = filename.split('_R2')[0]
-            if sample_dict[identifier][1] is not None:
-                print(f"WARNING: multiple R2 files matched identifier '{identifier}': "
-                      f"{sample_dict[identifier][1].name} and {filename}. Using the latter.")
-            sample_dict[identifier][1] = file
-        else:
-            print(f"ERROR the file {file} name does not contain R1/R2")
+        identifier, read_num = parse_fastq_filename(file.name)
+        if identifier is None:
+            print(f"ERROR the file {file} name does not match expected R1/R2 naming pattern")
+            continue
+
+        idx = 0 if read_num == "1" else 1
+        existing = sample_dict[identifier][idx]
+        if existing is not None:
+            print(f"WARNING: multiple R{read_num} files matched identifier '{identifier}': "
+                f"{existing.name} and {file.name}. Using the latter.")
+        sample_dict[identifier][idx] = file
+
     return sample_dict
 
 def validate_input(user_input, valid_options):
@@ -362,7 +377,7 @@ def main():
             common_values[f.key] = ask_from_user(
                 f"Give common value for '{f.key}' or leave empty to ask per sample:",
                 valid_options=f.options, mandatory=False)
-            "-------"
+
     for sample_id, files in sample_dict.items():
         r1, r2 = files[0], files[1]
         if r1 is None or r2 is None:
@@ -405,5 +420,7 @@ def main():
         output_path = Path(sample_fastq_folder) / f"metadata_{date_str}.csv"
         Metadata.write_to_csv(str(output_path), metadata_list)
         print(f"\nWrote metadata for {len(metadata_list)} sample(s) to {output_path}")
+    else:
+        print("No valid samples with both R1 and R2 found. metadata.csv not written.")
 if __name__ == '__main__':
     main()
