@@ -28,6 +28,8 @@ The script will:
      (e.g. `SAMPLE1_R1.fastq.gz` + `SAMPLE1_R2.fastq.gz` → sample `SAMPLE1`).
    - Subfolders are searched recursively.
    - Samples missing either the R1 or R2 file are skipped with a warning.
+   example: 
+   ``` /path/to/fastq_folder ```
 2. Let you optionally set **common values** (Species, Source, Owner-Collection,
    Instrument) that will be applied to every sample. Leave a field empty to be
    asked for it separately for each sample instead.
@@ -84,11 +86,3 @@ pytest test_metadata_script.py -v
 The test suite covers input validation, date validation, sample-pair detection
 from fastq filenames, and a full end-to-end run of the script with simulated
 user input.
-
-## Known limitations / possible improvements
-
-- The fastq folder path must currently be entered interactively; it is not yet
-  accepted as a command-line argument (e.g. `python3 metadata_generator.py /path`).
-  This could be added with `argparse`, falling back to the interactive prompt
-  when no argument is given.
-- `metadata.csv` is overwritten on each run rather than appended to.
